@@ -1,0 +1,131 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+
+/* NAVIGATION */
+
+header {
+  background-color: #333;
+  padding: 15px 0;
+}
+
+.logo {
+  color: #fff;
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+nav ul li {
+  display: inline;
+  margin-right: 20px;
+}
+
+nav ul li:last-child {
+  margin-right: 0;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav ul li a:hover {
+  color: #ffcc00;
+}
+
+@media only screen and (max-width: 600px) {
+  .logo {
+    font-size: 2rem;
+  }
+
+  nav ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav ul li {
+    display: block;
+    margin: 10px 0;
+  }
+}
+
+/*TO DO APP*/
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+  border: 3px solid #0056b3;
+  border-radius: 10px;
+  background-color: #ccdbe9;
+  margin-top: 50px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-input {
+  margin-bottom: 20px;
+}
+
+.task-input input[type="text"] {
+  margin-right: 10px;
+  padding: 5px;
+  width: 200px;
+}
+
+.task-input button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.task-input button:hover {
+  background-color: #0056b3;
+}
+
+.blue-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.blue-button:hover {
+  background-color: #0056b3;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+.result-container {
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+li > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+li > div span {
+  padding: 5px;
+  border: 1px solid #ccc;
+}
