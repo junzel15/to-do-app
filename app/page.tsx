@@ -31,7 +31,7 @@ const Home: React.FC = () => {
     try {
       const { data, error } = await supabase.from("tasks").select("*");
 
-      if (error) {
+      if (error instanceof Error) {
         throw error;
       }
 
@@ -39,7 +39,8 @@ const Home: React.FC = () => {
         setTasks(data);
       }
     } catch (error) {
-      console.error("Error fetching tasks:", error.message);
+      const errorMessage = (error as Error).message;
+      console.error("Error fetching tasks:", errorMessage);
     }
   };
 
@@ -48,15 +49,17 @@ const Home: React.FC = () => {
       try {
         const startTime = getCurrentDateTime();
 
-        const { data, error } = await supabase.from("tasks").insert([
-          {
-            text: taskInput,
-            description: taskDescription,
-            startTime: startTime,
-            endTime: null,
-            completed: false,
-          },
-        ]);
+        const { data, error }: { data: any; error: any } = await supabase
+          .from("tasks")
+          .insert([
+            {
+              text: taskInput,
+              description: taskDescription,
+              startTime: startTime,
+              endTime: null,
+              completed: false,
+            },
+          ]);
 
         if (error) {
           throw error;
@@ -67,9 +70,14 @@ const Home: React.FC = () => {
         setTaskDescription("");
 
         fetchTasks();
-      } catch (error) {
-        console.error("Error creating task:", error.message);
-        setResult("Error creating task");
+      } catch (error: any) {
+        if (error && error.message) {
+          console.error("Error creating task:", error.message);
+          setResult("Error creating task");
+        } else {
+          console.error("Unknown error occurred while creating task:", error);
+          setResult("Unknown error occurred while creating task");
+        }
       }
     } else {
       setResult("Please enter a task");
@@ -85,7 +93,7 @@ const Home: React.FC = () => {
 
     if (confirmation) {
       try {
-        const { error } = await supabase
+        const { error }: { error: any } = await supabase
           .from("tasks")
           .update({ completed: true, endTime: getCurrentDateTime() })
           .eq("id", taskId);
@@ -96,7 +104,7 @@ const Home: React.FC = () => {
 
         setResult("Task marked as done");
         fetchTasks();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error marking task as done:", error.message);
         setResult("Error marking task as done");
       }
@@ -123,7 +131,7 @@ const Home: React.FC = () => {
         return;
       }
 
-      const { error } = await supabase
+      const { error }: { error: any } = await supabase
         .from("tasks")
         .update({ text: newText, description: newDescription })
         .eq("id", taskId);
@@ -134,7 +142,7 @@ const Home: React.FC = () => {
 
       setResult("Task updated successfully");
       fetchTasks();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating task:", error.message);
       setResult("Error updating task");
     }
@@ -145,7 +153,7 @@ const Home: React.FC = () => {
     const confirmation = window.confirm("Are you sure to delete this task?");
     if (confirmation) {
       try {
-        const { error } = await supabase
+        const { error }: { error: any } = await supabase
           .from("tasks")
           .delete()
           .eq("id", taskId);
@@ -156,7 +164,7 @@ const Home: React.FC = () => {
 
         setResult("Task deleted successfully");
         fetchTasks();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error deleting task:", error.message);
         setResult("Error deleting task");
       }
