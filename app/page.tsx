@@ -6,7 +6,8 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 const supabaseUrl = "https://sezguqguycmsjppaimtw.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemd1cWd1eWNtc2pwcGFpbXR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQzNjk5MzYsImV4cCI6MjAyOTk0NTkzNn0.LGgeN65aJyajNLRvPK2_x3DzsAhnNfcWty_lVs3RTho";
-const supabase = createClient(supabaseUrl, supabaseKey) as SupabaseClient;
+
+const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
 const Home: React.FC = () => {
   const [tasks, setTasks] = useState<
@@ -39,7 +40,8 @@ const Home: React.FC = () => {
         setTasks(data);
       }
     } catch (error) {
-      const errorMessage = (error as Error).message;
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       console.error("Error fetching tasks:", errorMessage);
     }
   };
@@ -49,17 +51,15 @@ const Home: React.FC = () => {
       try {
         const startTime = getCurrentDateTime();
 
-        const { data, error }: { data: any; error: any } = await supabase
-          .from("tasks")
-          .insert([
-            {
-              text: taskInput,
-              description: taskDescription,
-              startTime: startTime,
-              endTime: null,
-              completed: false,
-            },
-          ]);
+        const { data, error } = await supabase.from("tasks").insert([
+          {
+            text: taskInput,
+            description: taskDescription,
+            startTime: startTime,
+            endTime: null,
+            completed: false,
+          },
+        ]);
 
         if (error) {
           throw error;
@@ -93,7 +93,7 @@ const Home: React.FC = () => {
 
     if (confirmation) {
       try {
-        const { error }: { error: any } = await supabase
+        const { error } = await supabase
           .from("tasks")
           .update({ completed: true, endTime: getCurrentDateTime() })
           .eq("id", taskId);
@@ -131,7 +131,7 @@ const Home: React.FC = () => {
         return;
       }
 
-      const { error }: { error: any } = await supabase
+      const { error } = await supabase
         .from("tasks")
         .update({ text: newText, description: newDescription })
         .eq("id", taskId);
@@ -153,7 +153,7 @@ const Home: React.FC = () => {
     const confirmation = window.confirm("Are you sure to delete this task?");
     if (confirmation) {
       try {
-        const { error }: { error: any } = await supabase
+        const { error } = await supabase
           .from("tasks")
           .delete()
           .eq("id", taskId);
@@ -188,88 +188,159 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="container">
-      <h1>To Do App</h1>
-      <div className="task-input">
-        <input
-          type="text"
-          placeholder="Enter task"
-          value={taskInput}
-          onChange={(e) => setTaskInput(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Enter task description"
-          value={taskDescription}
-          onChange={(e) => setTaskDescription(e.target.value)}
-        />
-        <button onClick={handleTaskCreation}>Create</button>
+    <div>
+      <div className="container mx-auto px-2 py-3 bg-teal-100 text-black rounded-lg shadow-lg border-solid border-2 border-indigo-600">
+        <h1 className="text-3xl font-bold mb-6 text-center text-blue-400">
+          To Do App
+        </h1>
+        <div className="flex flex-col md:flex-row mb-6">
+          <input
+            type="text"
+            placeholder="Enter task"
+            value={taskInput}
+            onChange={(e) => setTaskInput(e.target.value)}
+            className="p-2 border border-gray-600 rounded mr-2 mb-2 md:w-1/3 focus:outline-none focus:border-blue-500 bg-gray-700 text-white"
+          />
+          <input
+            type="text"
+            placeholder="Enter task description"
+            value={taskDescription}
+            onChange={(e) => setTaskDescription(e.target.value)}
+            className="p-2 border border-gray-600 rounded mr-2 mb-2 md:w-1/3 focus:outline-none focus:border-blue-500 bg-gray-700 text-white"
+          />
+          <button
+            onClick={handleTaskCreation}
+            className="bg-blue-500 text-white font-bold py-2 px-3 rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-700"
+          >
+            Create
+          </button>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold mb-4 text-black">Ongoing Tasks</h2>
+          {tasks.filter((task) => !task.completed).length > 0 ? (
+            <ul>
+              {tasks.map(
+                (task) =>
+                  !task.completed && (
+                    <li
+                      key={task.id}
+                      className="border-b border-gray-600 py-4 grid grid-cols-3 gap-4"
+                    >
+                      <div>
+                        {task.completed ? (
+                          <p className="text-black-400">
+                            End Time: {task.endTime}
+                          </p>
+                        ) : (
+                          <p className="text-black-400">
+                            Start Time: {task.startTime}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-black">
+                          Task: {task.text}
+                        </p>
+                        <p className="text-black">
+                          Description: {task.description}
+                        </p>
+                      </div>
+                      <div className="space-x-2">
+                        <button
+                          className="bg-green-500 text-white font-bold py-2 px-3 rounded hover:bg-green-700 focus:outline-none focus:bg-green-700"
+                          onClick={() => handleDoneTasks(task.id)}
+                        >
+                          Done
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateTask(
+                              task.id,
+                              "New Task",
+                              "New Description"
+                            )
+                          }
+                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700"
+                        >
+                          Update
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTask(task.id)}
+                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  )
+              )}
+            </ul>
+          ) : (
+            <p className="text-gray-400">No ongoing tasks</p>
+          )}
+        </div>
+        <div>
+          <h2 className="text-xl font-bold mb-4 text-black">Completed Tasks</h2>
+          {tasks.filter((task) => task.completed).length > 0 ? (
+            <ul>
+              {tasks.map(
+                (task) =>
+                  task.completed && (
+                    <li
+                      key={task.id}
+                      className="border-b border-gray-600 py-4 grid grid-cols-3 gap-4"
+                    >
+                      <div>
+                        <p className="text-black-400">
+                          Start Time: {task.startTime}
+                        </p>
+                        <p className="text-black-400">
+                          End Time: {task.endTime}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-black">
+                          Task: {task.text}
+                        </p>
+                        <p className="text-black">
+                          Description: {task.description}
+                        </p>
+                      </div>
+                      <div className="space-x-2">
+                        <button
+                          onClick={() =>
+                            handleUpdateTask(
+                              task.id,
+                              "New Task",
+                              "New Description"
+                            )
+                          }
+                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700"
+                        >
+                          Update
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTask(task.id)}
+                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  )
+              )}
+            </ul>
+          ) : (
+            <p className="text-gray-400">No completed tasks</p>
+          )}
+        </div>
+        <div className="result-container text-center text-gray-400 mt-6">
+          {result}
+        </div>
       </div>
-      <div>
-        <h2>Ongoing Tasks</h2>
-        {tasks.filter((task) => !task.completed).length > 0 ? (
-          <ul>
-            {tasks.map(
-              (task) =>
-                !task.completed && (
-                  <li key={task.id}>
-                    <div>
-                      {task.completed ? (
-                        <span>End Time: {task.endTime}</span>
-                      ) : (
-                        <span>Start Time: {task.startTime}</span>
-                      )}
-                      <span>Task: {task.text}</span>
-                      <span>Description: {task.description}</span>
-                    </div>
-                    <div>
-                      <button
-                        className="blue-button"
-                        onClick={() => handleDoneTasks(task.id)}
-                      >
-                        Done Tasks
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleUpdateTask(
-                            task.id,
-                            "New Task",
-                            "New Description"
-                          )
-                        }
-                      >
-                        Update
-                      </button>
-                      <button onClick={() => handleDeleteTask(task.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                )
-            )}
-          </ul>
-        ) : (
-          <p>No ongoing tasks</p>
-        )}
-      </div>
-      <div>
-        <h2>Completed Tasks</h2>
-        <ul>
-          {tasks
-            .filter((task) => task.completed)
-            .map((task) => (
-              <li key={task.id}>
-                <div>
-                  <span>Start Time: {task.startTime}</span>
-                  <span>End Time: {task.endTime}</span>
-                  <span>Task: {task.text}</span>
-                  <span>Description: {task.description}</span>
-                </div>
-              </li>
-            ))}
-        </ul>
-      </div>
-      <div className="result-container">{result}</div>
+      <footer className="text-center mt-6 text-black-400 ">
+        &copy; 2024 TO DO APP TITO SOLUTIONS
+      </footer>
     </div>
   );
 };
