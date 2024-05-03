@@ -1,6 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import {
+  CheckCircleIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/outline";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://sezguqguycmsjppaimtw.supabase.co";
@@ -20,9 +25,11 @@ const Home: React.FC = () => {
       completed: boolean;
     }[]
   >([]);
-  const [taskInput, setTaskInput] = useState<string>("");
-  const [taskDescription, setTaskDescription] = useState<string>("");
+
   const [result, setResult] = useState<string>("");
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [modalTaskInput, setModalTaskInput] = useState<string>("");
+  const [modalTaskDescription, setModalTaskDescription] = useState<string>("");
 
   useEffect(() => {
     fetchTasks();
@@ -47,14 +54,14 @@ const Home: React.FC = () => {
   };
 
   const handleTaskCreation = async () => {
-    if (taskInput.trim() !== "") {
+    if (modalTaskInput.trim() !== "") {
       try {
         const startTime = getCurrentDateTime();
 
         const { data, error } = await supabase.from("tasks").insert([
           {
-            text: taskInput,
-            description: taskDescription,
+            text: modalTaskInput,
+            description: modalTaskDescription,
             startTime: startTime,
             endTime: null,
             completed: false,
@@ -66,8 +73,9 @@ const Home: React.FC = () => {
         }
 
         setResult("Task created successfully");
-        setTaskInput("");
-        setTaskDescription("");
+        setModalTaskInput("");
+        setModalTaskDescription("");
+        setModalOpen(false);
 
         fetchTasks();
       } catch (error: any) {
@@ -194,29 +202,19 @@ const Home: React.FC = () => {
           To Do App
         </h1>
         <div className="flex flex-col md:flex-row mb-6">
-          <input
-            type="text"
-            placeholder="Enter task"
-            value={taskInput}
-            onChange={(e) => setTaskInput(e.target.value)}
-            className="p-2 border border-gray-600 rounded mr-2 mb-2 md:w-1/3 focus:outline-none focus:border-blue-500 bg-gray-700 text-white"
-          />
-          <input
-            type="text"
-            placeholder="Enter task description"
-            value={taskDescription}
-            onChange={(e) => setTaskDescription(e.target.value)}
-            className="p-2 border border-gray-600 rounded mr-2 mb-2 md:w-1/3 focus:outline-none focus:border-blue-500 bg-gray-700 text-white"
-          />
           <button
-            onClick={handleTaskCreation}
-            className="bg-blue-500 text-white font-bold py-2 px-3 rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-700"
+            onClick={() => setModalOpen(true)}
+            className="bg-blue-500 text-white font-bold py-2 px-3 rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-700 flex items-center"
           >
-            Create
+            <span className="mr-2">Create</span>
+            <PencilIcon className="h-5 w-5" />
           </button>
         </div>
         <div>
-          <h2 className="text-xl font-bold mb-4 text-black">Ongoing Tasks</h2>
+          <h2 className="text-xl font-bold mb-4 text-black flex items-center">
+            <span className="mr-2">Ongoing Tasks</span>
+            <CheckCircleIcon className="h-6 w-6" />
+          </h2>
           {tasks.filter((task) => !task.completed).length > 0 ? (
             <ul>
               {tasks.map(
@@ -245,30 +243,34 @@ const Home: React.FC = () => {
                           Description: {task.description}
                         </p>
                       </div>
-                      <div className="space-x-2">
+                      <div className="space-x-2 flex items-center">
+                        {" "}
                         <button
-                          className="bg-green-500 text-white font-bold py-2 px-3 rounded hover:bg-green-700 focus:outline-none focus:bg-green-700"
+                          className="bg-green-500 text-white font-bold py-2 px-3 rounded hover:bg-green-700 focus:outline-none focus:bg-green-700 flex items-center"
                           onClick={() => handleDoneTasks(task.id)}
                         >
-                          Done
+                          <span className="mr-2">Done</span>
+                          <CheckCircleIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() =>
                             handleUpdateTask(
                               task.id,
-                              "New Task",
-                              "New Description"
+                              task.text,
+                              task.description
                             )
                           }
-                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700"
+                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 flex items-center"
                         >
-                          Update
+                          <span className="mr-2">Update</span>
+                          <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteTask(task.id)}
-                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700"
+                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700 flex items-center"
                         >
-                          Delete
+                          <span className="mr-2">Delete</span>
+                          <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </li>
@@ -280,7 +282,10 @@ const Home: React.FC = () => {
           )}
         </div>
         <div>
-          <h2 className="text-xl font-bold mb-4 text-black">Completed Tasks</h2>
+          <h2 className="text-xl font-bold mb-4 text-black flex items-center">
+            <span className="mr-2">Completed Tasks</span>
+            <CheckCircleIcon className="h-6 w-6" />
+          </h2>
           {tasks.filter((task) => task.completed).length > 0 ? (
             <ul>
               {tasks.map(
@@ -306,24 +311,27 @@ const Home: React.FC = () => {
                           Description: {task.description}
                         </p>
                       </div>
-                      <div className="space-x-2">
+                      <div className="space-x-2 flex items-center">
+                        {" "}
                         <button
                           onClick={() =>
                             handleUpdateTask(
                               task.id,
-                              "New Task",
-                              "New Description"
+                              task.text,
+                              task.description
                             )
                           }
-                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700"
+                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 flex items-center"
                         >
-                          Update
+                          <span className="mr-2">Update</span>
+                          <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteTask(task.id)}
-                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700"
+                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700 flex items-center"
                         >
-                          Delete
+                          <span className="mr-2">Delete</span>
+                          <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </li>
@@ -341,6 +349,47 @@ const Home: React.FC = () => {
       <footer className="text-center mt-6 text-black-400 ">
         &copy; 2024 TO DO APP TITO SOLUTIONS
       </footer>
+
+      {/* Modal */}
+      <div className={`modal ${modalOpen ? "block" : "hidden"}`}>
+        <div
+          className="modal-overlay fixed inset-0 bg-gray-900 opacity-50"
+          onClick={() => setModalOpen(false)} // Close modal when overlay is clicked
+        ></div>
+        <div className="modal-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-1/2 md:max-w-lg rounded shadow-lg z-50 overflow-y-auto">
+          <div className="modal-content py-4 text-left px-6">
+            <div className="flex justify-between items-center pb-3">
+              <p className="text-2xl font-bold">Create New Task</p>
+              <span
+                className="modal-close cursor-pointer z-50"
+                onClick={() => setModalOpen(false)}
+              >
+                &times;
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder="Enter task"
+              value={modalTaskInput}
+              onChange={(e) => setModalTaskInput(e.target.value)}
+              className="modal-input mb-4 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+            />
+            <input
+              type="text"
+              placeholder="Enter task description"
+              value={modalTaskDescription}
+              onChange={(e) => setModalTaskDescription(e.target.value)}
+              className="modal-input mb-4 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+            />
+            <button
+              onClick={handleTaskCreation}
+              className="modal-button bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-700 flex items-center" // Added flex and items-center classes
+            >
+              <PencilIcon className="h-5 w-5 mr-2" /> Create
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
