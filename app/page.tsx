@@ -347,10 +347,9 @@ const Home: React.FC = () => {
         </div>
       </div>
       <footer className="text-center mt-6 text-black-400 ">
-        &copy; 2024 TO DO APP TITO SOLUTIONS
+        &copy; 2024 TO DO APP ELVIS
       </footer>
 
-      {/* Modal */}
       <div className={`modal ${modalOpen ? "block" : "hidden"}`}>
         <div
           className="modal-overlay fixed inset-0 bg-gray-900 opacity-50"

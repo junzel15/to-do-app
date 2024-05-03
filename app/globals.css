@@ -67,18 +67,18 @@ nav ul li a:hover {
 /*MODAL*/
 
 .modal-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Adjust the opacity if needed */
+  background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
-  pointer-events: none; /* This allows interaction with elements underneath */
-  transition: opacity 0.3s ease;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .modal-overlay.active {
   opacity: 1;
-  pointer-events: auto; /* Allow interaction with overlay */
+  pointer-events: auto;
 }
