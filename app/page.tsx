@@ -7,7 +7,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/outline";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { supabaseUrl, supabaseKey } from "./supabase";
+import { supabaseUrl, supabaseKey } from "../supabase";
 
 const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
