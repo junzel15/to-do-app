@@ -7,7 +7,10 @@ import {
   TrashIcon,
 } from "@heroicons/react/outline";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { supabaseUrl, supabaseKey } from "../supabaseConfig";
+
+const supabaseUrl = "https://sezguqguycmsjppaimtw.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemd1cWd1eWNtc2pwcGFpbXR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQzNjk5MzYsImV4cCI6MjAyOTk0NTkzNn0.LGgeN65aJyajNLRvPK2_x3DzsAhnNfcWty_lVs3RTho";
 
 const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
