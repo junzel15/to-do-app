@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import TaskItem from "../components/TaskList";
-import Modal from "../components/Modal";
+import TaskItem from "./components/TaskList";
+import Modal from "./components/Modal";
 import supabase from "./supabase/supabaseClient";
 import { Task } from "./types/task";
 import { PencilIcon } from "@heroicons/react/outline";

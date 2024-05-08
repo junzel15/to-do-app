@@ -1,5 +1,5 @@
 import React from "react";
-import { Task } from "../app/types/task";
+import { Task } from "../types/task";
 import { CheckIcon, PencilIcon, TrashIcon } from "@heroicons/react/outline";
 
 interface TaskItemProps {
