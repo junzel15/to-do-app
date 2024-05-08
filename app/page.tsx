@@ -1,28 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  CheckCircleIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/outline";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { supabaseUrl, supabaseKey } from "../supabase";
-
-const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+import TaskItem from "./TaskItem";
+import Modal from "./Modal";
+import supabase from "./supabaseClient";
+import { Task } from "./task";
+import { PencilIcon } from "@heroicons/react/outline";
+import { CheckCircleIcon } from "@heroicons/react/outline";
 
 const Home: React.FC = () => {
-  const [tasks, setTasks] = useState<
-    {
-      id: number;
-      text: string;
-      description: string;
-      startTime: string;
-      endTime: string;
-      completed: boolean;
-    }[]
-  >([]);
-
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [result, setResult] = useState<string>("");
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalTaskInput, setModalTaskInput] = useState<string>("");
@@ -36,7 +23,7 @@ const Home: React.FC = () => {
     try {
       const { data, error } = await supabase.from("tasks").select("*");
 
-      if (error instanceof Error) {
+      if (error) {
         throw error;
       }
 
@@ -76,13 +63,8 @@ const Home: React.FC = () => {
 
         fetchTasks();
       } catch (error: any) {
-        if (error && error.message) {
-          console.error("Error creating task:", error.message);
-          setResult("Error creating task");
-        } else {
-          console.error("Unknown error occurred while creating task:", error);
-          setResult("Unknown error occurred while creating task");
-        }
+        console.error("Error creating task:", error.message);
+        setResult("Error creating task");
       }
     } else {
       setResult("Please enter a task");
@@ -217,60 +199,13 @@ const Home: React.FC = () => {
               {tasks.map(
                 (task) =>
                   !task.completed && (
-                    <li
+                    <TaskItem
                       key={task.id}
-                      className="border-b border-gray-600 py-4 grid grid-cols-3 gap-4"
-                    >
-                      <div>
-                        {task.completed ? (
-                          <p className="text-black-400">
-                            End Time: {task.endTime}
-                          </p>
-                        ) : (
-                          <p className="text-black-400">
-                            Start Time: {task.startTime}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold text-black">
-                          Task: {task.text}
-                        </p>
-                        <p className="text-black">
-                          Description: {task.description}
-                        </p>
-                      </div>
-                      <div className="space-x-2 flex items-center">
-                        {" "}
-                        <button
-                          className="bg-green-500 text-white font-bold py-2 px-3 rounded hover:bg-green-700 focus:outline-none focus:bg-green-700 flex items-center"
-                          onClick={() => handleDoneTasks(task.id)}
-                        >
-                          <span className="mr-2">Done</span>
-                          <CheckCircleIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateTask(
-                              task.id,
-                              task.text,
-                              task.description
-                            )
-                          }
-                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 flex items-center"
-                        >
-                          <span className="mr-2">Update</span>
-                          <PencilIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700 flex items-center"
-                        >
-                          <span className="mr-2">Delete</span>
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </li>
+                      task={task}
+                      onDoneTask={handleDoneTasks}
+                      onUpdateTask={handleUpdateTask}
+                      onDeleteTask={handleDeleteTask}
+                    />
                   )
               )}
             </ul>
@@ -288,50 +223,13 @@ const Home: React.FC = () => {
               {tasks.map(
                 (task) =>
                   task.completed && (
-                    <li
+                    <TaskItem
                       key={task.id}
-                      className="border-b border-gray-600 py-4 grid grid-cols-3 gap-4"
-                    >
-                      <div>
-                        <p className="text-black-400">
-                          Start Time: {task.startTime}
-                        </p>
-                        <p className="text-black-400">
-                          End Time: {task.endTime}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold text-black">
-                          Task: {task.text}
-                        </p>
-                        <p className="text-black">
-                          Description: {task.description}
-                        </p>
-                      </div>
-                      <div className="space-x-2 flex items-center">
-                        {" "}
-                        <button
-                          onClick={() =>
-                            handleUpdateTask(
-                              task.id,
-                              task.text,
-                              task.description
-                            )
-                          }
-                          className="bg-yellow-500 text-white font-bold py-2 px-3 rounded hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 flex items-center"
-                        >
-                          <span className="mr-2">Update</span>
-                          <PencilIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="bg-red-500 text-white font-bold py-2 px-3 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700 flex items-center"
-                        >
-                          <span className="mr-2">Delete</span>
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </li>
+                      task={task}
+                      onDoneTask={handleDoneTasks}
+                      onUpdateTask={handleUpdateTask}
+                      onDeleteTask={handleDeleteTask}
+                    />
                   )
               )}
             </ul>
@@ -346,46 +244,15 @@ const Home: React.FC = () => {
       <footer className="text-center mt-6 text-black-400 ">
         &copy; 2024 TO DO APP ELVIS
       </footer>
-
-      <div className={`modal ${modalOpen ? "block" : "hidden"}`}>
-        <div
-          className="modal-overlay fixed inset-0 bg-gray-900 opacity-50"
-          onClick={() => setModalOpen(false)} // Close modal when overlay is clicked
-        ></div>
-        <div className="modal-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-1/2 md:max-w-lg rounded shadow-lg z-50 overflow-y-auto">
-          <div className="modal-content py-4 text-left px-6">
-            <div className="flex justify-between items-center pb-3">
-              <p className="text-2xl font-bold">Create New Task</p>
-              <span
-                className="modal-close cursor-pointer z-50"
-                onClick={() => setModalOpen(false)}
-              >
-                &times;
-              </span>
-            </div>
-            <input
-              type="text"
-              placeholder="Enter task"
-              value={modalTaskInput}
-              onChange={(e) => setModalTaskInput(e.target.value)}
-              className="modal-input mb-4 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              placeholder="Enter task description"
-              value={modalTaskDescription}
-              onChange={(e) => setModalTaskDescription(e.target.value)}
-              className="modal-input mb-4 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-            />
-            <button
-              onClick={handleTaskCreation}
-              className="modal-button bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-700 flex items-center" // Added flex and items-center classes
-            >
-              <PencilIcon className="h-5 w-5 mr-2" /> Create
-            </button>
-          </div>
-        </div>
-      </div>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreateTask={handleTaskCreation}
+        taskInput={modalTaskInput}
+        setTaskInput={setModalTaskInput}
+        taskDescription={modalTaskDescription}
+        setTaskDescription={setModalTaskDescription}
+      />
     </div>
   );
 };
