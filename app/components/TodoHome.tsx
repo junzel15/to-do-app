@@ -1,7 +1,7 @@
 "use client";
 
 import React, { FunctionComponent, useState, useEffect } from "react";
-import { Task } from "../types/task";
+import { Task } from "../interface/task";
 import supabase from "../supabase/supabaseClient";
 import { PencilIcon, CheckCircleIcon } from "@heroicons/react/outline";
 import TaskList from "./TaskList";

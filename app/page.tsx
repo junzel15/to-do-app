@@ -2,7 +2,7 @@
 
 import supabase from "./supabase/supabaseClient";
 import TodoHome from "./components/TodoHome";
-import { Task } from "./types/task";
+import { Task } from "./interface/task";
 
 async function Home() {
   try {

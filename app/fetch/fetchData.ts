@@ -1,4 +1,4 @@
-import { Task } from "../types/task";
+import { Task } from "../interface/task";
 import supabase from "../supabase/supabaseClient";
 
 async function fetchData(): Promise<Task[] | null> {
