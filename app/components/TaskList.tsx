@@ -13,7 +13,7 @@ interface TaskItemProps {
   onDeleteTask: (id: number) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({
+const TaskList: React.FC<TaskItemProps> = ({
   task,
   onDoneTask,
   onUpdateTask,
@@ -62,4 +62,4 @@ const TaskItem: React.FC<TaskItemProps> = ({
   );
 };
 
-export default TaskItem;
+export default TaskList;

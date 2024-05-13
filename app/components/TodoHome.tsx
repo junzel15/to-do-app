@@ -1,6 +1,6 @@
 "use client";
 
-import { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import { Task } from "../types/task";
 import supabase from "../supabase/supabaseClient";
 import { PencilIcon, CheckCircleIcon } from "@heroicons/react/outline";
@@ -8,21 +8,42 @@ import TaskList from "./TaskList";
 import Modal from "./Modal";
 
 interface TodoHomeProps {
-  tasks: Task[];
+  Tasks: Task[];
+  error?: string | null;
 }
 
-const TodoHome: FunctionComponent<TodoHomeProps> = (props) => {
-  const { tasks } = props;
+const TodoHome: FunctionComponent<TodoHomeProps> = ({ Tasks }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalTaskInput, setModalTaskInput] = useState<string>("");
   const [modalTaskDescription, setModalTaskDescription] = useState<string>("");
   const [result, setResult] = useState<string>("");
+  const [tasks, setTasks] = useState<Task[]>(Tasks);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data: tasksData, error } = await supabase
+        .from("tasks")
+        .select("*");
+      if (error) {
+        throw error;
+      }
+      if (tasksData) {
+        setTasks(tasksData);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const handleTaskCreation = async () => {
     if (modalTaskInput.trim() !== "") {
       try {
         const startTime = getCurrentDateTime();
-        const { data, error } = await supabase.from("tasks").insert([
+        const { error } = await supabase.from("tasks").insert([
           {
             text: modalTaskInput,
             description: modalTaskDescription,
@@ -38,6 +59,7 @@ const TodoHome: FunctionComponent<TodoHomeProps> = (props) => {
         setModalTaskInput("");
         setModalTaskDescription("");
         setModalOpen(false);
+        fetchData();
       } catch (error) {
         console.error(
           "Error creating task:",
@@ -51,26 +73,25 @@ const TodoHome: FunctionComponent<TodoHomeProps> = (props) => {
   };
 
   const handleDoneTasks = async (taskId: number) => {
-    console.log("Task ID:", taskId);
-    const confirmation = window.confirm(
-      "Are you sure to mark this task as done?"
-    );
-    if (confirmation) {
-      try {
-        const { error } = await supabase
-          .from("tasks")
-          .update({ completed: true, endTime: getCurrentDateTime() })
-          .eq("id", taskId);
-        if (error) {
-          throw error;
-        }
-        setResult("Task marked as done");
-      } catch (error: any) {
-        console.error("Error marking task as done:", error.message);
-        setResult("Error marking task as done");
+    try {
+      const confirmation = window.confirm("Are you sure this task is done?");
+      if (!confirmation) {
+        setResult("Task marking as done canceled");
+        return;
       }
-    } else {
-      setResult("Task marking as done canceled");
+
+      const { error } = await supabase
+        .from("tasks")
+        .update({ completed: true, endTime: getCurrentDateTime() })
+        .eq("id", taskId);
+      if (error) {
+        throw error;
+      }
+      setResult("Task marked as done");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error marking task as done:", error.message);
+      setResult("Error marking task as done");
     }
   };
 
@@ -79,7 +100,6 @@ const TodoHome: FunctionComponent<TodoHomeProps> = (props) => {
     currentText: string,
     currentDescription: string
   ) => {
-    console.log("Task ID:", taskId);
     try {
       const newText = prompt("Enter new task text:", currentText);
       const newDescription = prompt(
@@ -98,6 +118,7 @@ const TodoHome: FunctionComponent<TodoHomeProps> = (props) => {
         throw error;
       }
       setResult("Task updated successfully");
+      fetchData();
     } catch (error: any) {
       console.error("Error updating task:", error.message);
       setResult("Error updating task");
@@ -105,22 +126,22 @@ const TodoHome: FunctionComponent<TodoHomeProps> = (props) => {
   };
 
   const handleDeleteTask = async (taskId: number) => {
-    console.log("Task ID:", taskId);
-    const confirmation = window.confirm("Are you sure to delete this task?");
-    if (confirmation) {
-      try {
-        const { error } = await supabase
-          .from("tasks")
-          .delete()
-          .eq("id", taskId);
-        if (error) {
-          throw error;
-        }
-        setResult("Task deleted successfully");
-      } catch (error: any) {
-        console.error("Error deleting task:", error.message);
-        setResult("Error deleting task");
+    try {
+      const confirmation = window.confirm("Are you sure to delete this task?");
+      if (!confirmation) {
+        setResult("Task deletion canceled");
+        return;
       }
+
+      const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+      if (error) {
+        throw error;
+      }
+      setResult("Task deleted successfully");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error deleting task:", error.message);
+      setResult("Error deleting task");
     }
   };
 

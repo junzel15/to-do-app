@@ -2,15 +2,23 @@
 
 import supabase from "./supabase/supabaseClient";
 import TodoHome from "./components/TodoHome";
+import { Task } from "./types/task";
 
-const Home = async () => {
-  const { data, error } = await supabase.from("tasks").select("*");
+async function Home() {
+  try {
+    const { data: tasks, error } = await supabase.from("tasks").select("*");
 
-  if (error) {
-    throw error;
+    if (error) {
+      throw error;
+    }
+
+    const typedTasks: Task[] = tasks || [];
+
+    return <TodoHome Tasks={typedTasks} error={null} />;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return <TodoHome Tasks={[]} error={errorMessage} />;
   }
-
-  return <TodoHome tasks={data} />;
-};
+}
 
 export default Home;
